@@ -1,0 +1,138 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }} - FinSplit{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-people"></i> {{ title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" id="poolForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Pool Name *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                            {{ form.name }}
+                        </div>
+                        {% if form.name.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.name.errors.0 }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Choose a descriptive name for your expense pool</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-text-paragraph"></i></span>
+                            {{ form.description }}
+                        </div>
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.description.errors.0 }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Optional description to help members understand the pool's purpose</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.default_split_method.id_for_label }}" class="form-label">Default Split Method</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-pie-chart"></i></span>
+                            {{ form.default_split_method }}
+                        </div>
+                        {% if form.default_split_method.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.default_split_method.errors.0 }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">How expenses should be split by default in this pool</div>
+                    </div>
+
+                    <!-- Split Method Info -->
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle"></i> Split Method Guide</h6>
+                        <ul class="mb-0">
+                            <li><strong>Equal Split:</strong> Divide expenses equally among all members</li>
+                            <li><strong>Percentage Split:</strong> Split based on custom percentages for each member</li>
+                            <li><strong>Manual Split:</strong> Manually specify exact amounts for each member</li>
+                        </ul>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors.0 }}
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% if pool %}{% url 'core:pool_detail' pool.id %}{% else %}{% url 'core:pool_list' %}{% endif %}" 
+                           class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary" onclick="return validateForm('poolForm')">
+                            <i class="bi bi-check-lg"></i> 
+                            {% if pool %}Update Pool{% else %}Create Pool{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Pool Creation Tips -->
+        {% if not pool %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-lightbulb"></i> Pool Creation Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-check-circle text-success"></i> Good Pool Names</h6>
+                        <ul class="list-unstyled">
+                            <li>• "Goa Trip 2024"</li>
+                            <li>• "Office Lunch Group"</li>
+                            <li>• "Apartment 3B Expenses"</li>
+                            <li>• "Weekend Getaway"</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-info-circle text-info"></i> Best Practices</h6>
+                        <ul class="list-unstyled">
+                            <li>• Use descriptive names</li>
+                            <li>• Include dates for events</li>
+                            <li>• Add context in description</li>
+                            <li>• Choose appropriate split method</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border-left: none;
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+    textarea.form-control {
+        min-height: 100px;
+    }
+</style>
+{% endblock %}
+

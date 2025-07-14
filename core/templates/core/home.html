@@ -1,0 +1,140 @@
+{% extends 'core/base.html' %}
+
+{% block title %}FinSplit - Split Expenses Easily{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row align-items-center mb-5">
+    <div class="col-lg-6">
+        <h1 class="display-4 fw-bold text-primary mb-4">
+            Split Expenses <span class="text-dark">Effortlessly</span>
+        </h1>
+        <p class="lead mb-4">
+            FinSplit makes it easy to split bills, track expenses, and settle up with friends and family. 
+            No more awkward money conversations or forgotten debts.
+        </p>
+        <div class="d-flex gap-3">
+            {% if user.is_authenticated %}
+                <a href="{% url 'core:dashboard' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-speedometer2"></i> Go to Dashboard
+                </a>
+                <a href="{% url 'core:pool_create' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Create Pool
+                </a>
+            {% else %}
+                <a href="{% url 'core:signup' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-person-plus"></i> Get Started Free
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6 text-center">
+        <div class="bg-gradient-primary rounded-3 p-5 text-white">
+            <i class="bi bi-calculator display-1 mb-3"></i>
+            <h3>Smart Expense Splitting</h3>
+            <p>Automatically calculate who owes what with our intelligent splitting algorithms.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-5">Why Choose FinSplit?</h2>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="bi bi-people-fill display-4 text-primary mb-3"></i>
+                <h5 class="card-title">Group Management</h5>
+                <p class="card-text">
+                    Create pools for different groups - trips, roommates, office lunches, or any shared expenses.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="bi bi-pie-chart-fill display-4 text-success mb-3"></i>
+                <h5 class="card-title">Flexible Splitting</h5>
+                <p class="card-text">
+                    Split equally, by percentage, or manually. Handle any expense scenario with ease.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="bi bi-credit-card-fill display-4 text-info mb-3"></i>
+                <h5 class="card-title">UPI Integration</h5>
+                <p class="card-text">
+                    Seamless payments with UPI integration. Settle up instantly with just a few clicks.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-5">How It Works</h2>
+    </div>
+    
+    <div class="col-md-3 text-center mb-4">
+        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+            <span class="h3 mb-0">1</span>
+        </div>
+        <h5>Create a Pool</h5>
+        <p class="text-muted">Start by creating a pool for your group or event.</p>
+    </div>
+    
+    <div class="col-md-3 text-center mb-4">
+        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+            <span class="h3 mb-0">2</span>
+        </div>
+        <h5>Add Members</h5>
+        <p class="text-muted">Invite friends and family using their UPI IDs or email addresses.</p>
+    </div>
+    
+    <div class="col-md-3 text-center mb-4">
+        <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+            <span class="h3 mb-0">3</span>
+        </div>
+        <h5>Log Expenses</h5>
+        <p class="text-muted">Add expenses and choose how to split them among group members.</p>
+    </div>
+    
+    <div class="col-md-3 text-center mb-4">
+        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+            <span class="h3 mb-0">4</span>
+        </div>
+        <h5>Settle Up</h5>
+        <p class="text-muted">View balances and settle up using UPI or other payment methods.</p>
+    </div>
+</div>
+
+<!-- CTA Section -->
+{% if not user.is_authenticated %}
+<div class="row">
+    <div class="col-12">
+        <div class="bg-gradient-primary text-white rounded-3 p-5 text-center">
+            <h3 class="mb-3">Ready to Start Splitting?</h3>
+            <p class="lead mb-4">Join thousands of users who trust FinSplit for their expense management.</p>
+            <a href="{% url 'core:signup' %}" class="btn btn-light btn-lg">
+                <i class="bi bi-person-plus"></i> Create Your Free Account
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

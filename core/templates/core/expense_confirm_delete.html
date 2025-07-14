@@ -1,0 +1,24 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Confirm Delete Expense - FinSplit{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Confirm Delete Expense</h3>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to delete the expense "{{ expense.title }}" ({{ expense.amount }})?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <a href="{% url 'core:expense_detail' expense.id %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,278 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }} - FinSplit{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-receipt"></i> {{ title }}
+                    {% if pool %}
+                        <small class="text-muted">in {{ pool.name }}</small>
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="expenseForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <!-- Basic Expense Information -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Expense Details</h6>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">Expense Title *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                    {{ form.title }}
+                                </div>
+                                {% if form.title.errors %}
+                                    <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-text-paragraph"></i></span>
+                                    {{ form.description }}
+                                </div>
+                                {% if form.description.errors %}
+                                    <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.amount.id_for_label }}" class="form-label">Amount *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        {{ form.amount }}
+                                    </div>
+                                    {% if form.amount.errors %}
+                                        <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.paid_by.id_for_label }}" class="form-label">Paid By *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        {{ form.paid_by }}
+                                    </div>
+                                    {% if form.paid_by.errors %}
+                                        <div class="text-danger small mt-1">{{ form.paid_by.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.expense_date.id_for_label }}" class="form-label">Date</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                        {{ form.expense_date }}
+                                    </div>
+                                    {% if form.expense_date.errors %}
+                                        <div class="text-danger small mt-1">{{ form.expense_date.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.split_method.id_for_label }}" class="form-label">Split Method</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-pie-chart"></i></span>
+                                        {{ form.split_method }}
+                                    </div>
+                                    {% if form.split_method.errors %}
+                                        <div class="text-danger small mt-1">{{ form.split_method.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.receipt_image.id_for_label }}" class="form-label">Receipt (Optional)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-image"></i></span>
+                                    {{ form.receipt_image }}
+                                </div>
+                                {% if form.receipt_image.errors %}
+                                    <div class="text-danger small mt-1">{{ form.receipt_image.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text">Upload a photo of the receipt for reference</div>
+                            </div>
+                        </div>
+
+                        <!-- Split Configuration -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Split Configuration</h6>
+                            
+                            <!-- Split Equally Option -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        {{ form.split_equally }}
+                                        <label class="form-check-label" for="{{ form.split_equally.id_for_label }}">
+                                            <strong>Split Equally</strong>
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">Divide the expense equally among all pool members</small>
+                                    
+                                    <div id="equalSplitPreview" class="mt-2" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <strong>Equal Split Preview:</strong>
+                                            <div id="equalSplitAmount">Each person pays: ₹0.00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pool Members List -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Pool Members</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if pool %}
+                                        <div id="membersList">
+                                            {% for member in pool.members.all %}
+                                            <div class="d-flex align-items-center justify-content-between mb-2 p-2 border rounded">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="member-avatar me-2">
+                                                        {{ member.username|first|upper }}
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0">{{ member.username }}</h6>
+                                                        <small class="text-muted">{{ member.email }}</small>
+                                                    </div>
+                                                </div>
+                                                <div class="text-end">
+                                                    <input type="checkbox" class="form-check-input member-checkbox" 
+                                                           data-member-id="{{ member.id }}" 
+                                                           data-member-name="{{ member.username }}"
+                                                           checked>
+                                                    <div class="member-amount mt-1" style="display: none;">
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               placeholder="Amount" step="0.01" min="0">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Split Summary -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Split Summary</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="splitSummary">
+                                        <p class="text-muted">Configure the expense details to see the split summary</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors.0 }}
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% if pool %}{% url 'core:pool_detail' pool.id %}{% else %}{% url 'core:dashboard' %}{% endif %}" 
+                           class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i> 
+                            {% if expense %}Update Expense{% else %}Add Expense{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border-left: none;
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+    .member-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('{{ form.amount.id_for_label }}');
+    const splitEquallyCheckbox = document.getElementById('{{ form.split_equally.id_for_label }}');
+    const splitMethodSelect = document.getElementById('{{ form.split_method.id_for_label }}');
+    const memberCheckboxes = document.querySelectorAll('.member-checkbox');
+    
+    function updateSplitPreview() {
+        const totalAmount = parseFloat(amountInput.value) || 0;
+        const checkedMembers = document.querySelectorAll('.member-checkbox:checked');
+        const memberCount = checkedMembers.length;
+        
+        if (totalAmount > 0 && memberCount > 0) {
+            const equalSplitAmount = (totalAmount / memberCount).toFixed(2);
+            document.getElementById('equalSplitAmount').textContent = `Each person pays: ₹${equalSplitAmount}`;
+            document.getElementById('equalSplitPreview').style.display = 'block';
+            
+            // Update split summary
+            let summaryHtml = '<div class="row">';
+            checkedMembers.forEach(function(checkbox) {
+                const memberName = checkbox.dataset.memberName;
+                summaryHtml += `
+                    <div class="col-6 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>${memberName}</span>
+                            <span class="fw-bold">₹${equalSplitAmount}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            summaryHtml += '</div>';
+            summaryHtml += `<hr><div class="d-flex justify-content-between"><strong>Total: ₹${totalAmount.toFixed(2)}</strong></div>`;
+            
+            document.getElementById('splitSummary').innerHTML = summaryHtml;
+        } else {
+            document.getElementById('equalSplitPreview').style.display = 'none';
+            document.getElementById('splitSummary').innerHTML = '<p class="text-muted">Configure the expense details to see the split summary</p>';
+        }
+    }
+    
+    // Event listeners
+    amountInput.addEventListener('input', updateSplitPreview);
+    memberCheckboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', updateSplitPreview);
+    });
+    
+    // Initialize
+    updateSplitPreview();
+});
+</script>
+{% endblock %}
+

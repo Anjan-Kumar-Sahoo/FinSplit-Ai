@@ -1,0 +1,67 @@
+# FinSplit Django Application Requirements
+
+# Core Django
+Django==5.2.4
+
+# Django REST Framework for API
+djangorestframework==3.15.2
+
+# CORS handling for API
+django-cors-headers==4.3.1
+
+# Filtering for DRF
+django-filter==24.2
+
+# Additional useful packages for production
+# Uncomment as needed:
+
+# Database
+# psycopg2-binary==2.9.7  # For PostgreSQL
+# mysqlclient==2.2.0      # For MySQL
+
+# Production server
+# gunicorn==21.2.0
+# whitenoise==6.5.0       # Static file serving
+
+# Environment management
+# python-decouple==3.8
+# python-dotenv==1.0.0
+
+# Caching
+# redis==4.6.0
+# django-redis==5.3.0
+
+# Email
+# django-anymail==10.1    # For email services like SendGrid, Mailgun
+
+# Image processing
+# Pillow==10.0.0
+
+# Development tools
+# django-debug-toolbar==4.2.0
+# django-extensions==3.2.3
+
+# Testing
+# pytest==7.4.0
+# pytest-django==4.5.2
+# factory-boy==3.3.0
+
+# Code quality
+# flake8==6.0.0
+# black==23.7.0
+# isort==5.12.0
+
+# Security
+# django-security==0.17.0
+
+# Monitoring
+# sentry-sdk==1.29.2
+
+# API documentation
+# drf-spectacular==0.26.4
+
+
+Flask==3.0.3
+gunicorn==23.0.0
+requests==2.32.4
+

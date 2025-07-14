@@ -1,0 +1,278 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ pool.name }} - FinSplit{% endblock %}
+
+{% block content %}
+<!-- Pool Header -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="h3 mb-1">{{ pool.name }}</h1>
+        <p class="text-muted mb-2">{{ pool.description|default:"No description provided" }}</p>
+        <div class="d-flex gap-3 text-muted small">
+            <span><i class="bi bi-person"></i> Created by 
+                {% if pool.created_by == user %}You{% else %}{{ pool.created_by.username }}{% endif %}
+            </span>
+            <span><i class="bi bi-calendar"></i> {{ pool.created_at|date:"M d, Y" }}</span>
+            <span><i class="bi bi-people"></i> {{ members.count }} members</span>
+        </div>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group" role="group">
+            <a href="{% url 'core:expense_add' pool.id %}" class="btn btn-success">
+                <i class="bi bi-plus"></i> Add Expense
+            </a>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-gear"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{% url 'core:member_add' pool.id %}">
+                        <i class="bi bi-person-plus"></i> Add Member
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'core:pool_settle' pool.id %}">
+                        <i class="bi bi-calculator"></i> Settle Up
+                    </a></li>
+                    {% if pool.created_by == user %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'core:pool_edit' pool.id %}">
+                        <i class="bi bi-pencil"></i> Edit Pool
+                    </a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pool Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary mb-1">₹{{ total_expenses }}</h3>
+                <small class="text-muted">Total Expenses</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success mb-1">{{ expenses_page.paginator.count }}</h3>
+                <small class="text-muted">Total Items</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-info mb-1">{{ members.count }}</h3>
+                <small class="text-muted">Members</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-warning mb-1">{{ transactions.count }}</h3>
+                <small class="text-muted">Pending</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Expenses Section -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-receipt"></i> Expenses
+                </h5>
+                <a href="{% url 'core:expense_add' pool.id %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus"></i> Add Expense
+                </a>
+            </div>
+            <div class="card-body">
+                {% if expenses_page %}
+                    {% for expense in expenses_page %}
+                    <div class="expense-item mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">
+                                    <a href="{% url 'core:expense_detail' expense.id %}" class="text-decoration-none">
+                                        {{ expense.title }}
+                                    </a>
+                                </h6>
+                                <p class="text-muted small mb-1">{{ expense.description|truncatechars:100 }}</p>
+                                <div class="d-flex gap-3 text-muted small">
+                                    <span><i class="bi bi-person"></i> Paid by {{ expense.paid_by.username }}</span>
+                                    <span><i class="bi bi-calendar"></i> {{ expense.expense_date|date:"M d, Y" }}</span>
+                                    <span><i class="bi bi-tag"></i> {{ expense.get_split_method_display }}</span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <h5 class="text-success mb-1">₹{{ expense.amount }}</h5>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'core:expense_detail' expense.id %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if expense.created_by == user %}
+                                    <a href="{% url 'core:expense_edit' expense.id %}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Pagination for expenses -->
+                    {% if expenses_page.has_other_pages %}
+                    <nav aria-label="Expense pagination">
+                        <ul class="pagination pagination-sm justify-content-center">
+                            {% if expenses_page.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ expenses_page.previous_page_number }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ expenses_page.number }} of {{ expenses_page.paginator.num_pages }}</span>
+                            </li>
+                            {% if expenses_page.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ expenses_page.next_page_number }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-receipt display-4 text-muted mb-3"></i>
+                        <h5 class="text-muted">No expenses yet</h5>
+                        <p class="text-muted">Start by adding your first expense to this pool</p>
+                        <a href="{% url 'core:expense_add' pool.id %}" class="btn btn-success">
+                            <i class="bi bi-plus"></i> Add First Expense
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Members Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="bi bi-people"></i> Members ({{ members.count }})
+                </h6>
+                <a href="{% url 'core:member_add' pool.id %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                {% for member in members %}
+                <div class="d-flex align-items-center mb-2">
+                    <div class="member-avatar me-3">
+                        {{ member.username|first|upper }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ member.username }}</h6>
+                        <small class="text-muted">
+                            {% if member.member.is_admin %}
+                                <i class="bi bi-star-fill text-warning"></i> Admin
+                            {% endif %}
+                            Joined {{ member.member.joined_at|date:"M d" }}
+                        </small>
+                    </div>
+                    {% if member.profile.upi_id %}
+                    <button class="btn btn-outline-secondary btn-sm" onclick="copyUPIId('{{ member.profile.upi_id }}')">
+                        <i class="bi bi-credit-card"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Balances Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-calculator"></i> Balances
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for user_id, balance in balances.items %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded
+                    {% if balance.balance > 0 %}balance-positive{% elif balance.balance < 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                    <div>
+                        <h6 class="mb-0">{{ balance.user.username }}</h6>
+                        <small class="text-muted">
+                            Paid ₹{{ balance.paid }} • Owes ₹{{ balance.owes }}
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        {% if balance.balance > 0 %}
+                            <span class="fw-bold text-success">+₹{{ balance.balance }}</span>
+                            <br><small class="text-muted">gets back</small>
+                        {% elif balance.balance < 0 %}
+                            <span class="fw-bold text-danger">-₹{{ balance.balance|floatformat:2 }}</span>
+                            <br><small class="text-muted">owes</small>
+                        {% else %}
+                            <span class="fw-bold text-secondary">₹0.00</span>
+                            <br><small class="text-muted">settled</small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if balances %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'core:pool_settle' pool.id %}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-calculator"></i> Settle Up
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pending Transactions -->
+        {% if transactions %}
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-clock"></i> Pending Settlements
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for transaction in transactions %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                    <div>
+                        <small class="text-muted">
+                            {{ transaction.from_user.username }} → {{ transaction.to_user.username }}
+                        </small>
+                        <br>
+                        <span class="badge status-{{ transaction.status }}">{{ transaction.get_status_display }}</span>
+                    </div>
+                    <div class="text-end">
+                        <span class="fw-bold">₹{{ transaction.amount }}</span>
+                        {% if transaction.from_user == user or transaction.to_user == user %}
+                        <br>
+                        <a href="{% url 'core:transaction_mark_paid' transaction.id %}" class="btn btn-success btn-xs">
+                            Mark Paid
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

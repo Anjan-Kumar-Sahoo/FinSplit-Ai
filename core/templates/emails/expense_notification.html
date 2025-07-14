@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Expense Added - {{ site_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 10px;
+        }
+        .title {
+            color: #198754;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .expense-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid #198754;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #198754;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #198754;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🧾 {{ site_name }}</div>
+            <h1 class="title">New Expense Added</h1>
+        </div>
+        
+        <p>A new expense has been added to your pool <strong>{{ pool.name }}</strong>.</p>
+        
+        <div class="expense-info">
+            <h3>{{ expense.title }}</h3>
+            {% if expense.description %}
+            <p>{{ expense.description }}</p>
+            {% endif %}
+            
+            <div class="amount">₹{{ expense.amount }}</div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Paid by:</span>
+                <span>{{ expense.paid_by.first_name|default:expense.paid_by.username }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span>{{ expense.expense_date|date:"M d, Y" }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Split method:</span>
+                <span>{{ expense.get_split_method_display }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Added by:</span>
+                <span>{{ expense.created_by.first_name|default:expense.created_by.username }}</span>
+            </div>
+        </div>
+        
+        <p>This expense will be split among all pool members according to the selected split method.</p>
+        
+        <div style="text-align: center;">
+            <a href="{{ pool_url }}" class="btn">View Pool Details</a>
+        </div>
+        
+        <p><strong>What's next?</strong></p>
+        <ul>
+            <li>Check your updated balance in the pool</li>
+            <li>View the expense split details</li>
+            <li>Settle up when you're ready</li>
+        </ul>
+        
+        <div class="footer">
+            <p>You're receiving this because you're a member of {{ pool.name }}.</p>
+            <p>&copy; 2024 {{ site_name }}. Making expense splitting simple.</p>
+        </div>
+    </div>
+</body>
+</html>
+

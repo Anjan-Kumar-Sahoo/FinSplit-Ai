@@ -1,0 +1,173 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Profile - FinSplit{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-person-circle"></i> Your Profile
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- User Information (Read-only) -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">Account Information</h6>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" value="{{ user.first_name }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" value="{{ user.last_name }}" readonly>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Profile Information (Editable) -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">Payment Information</h6>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.upi_id.id_for_label }}" class="form-label">UPI ID</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                                {{ form.upi_id }}
+                                <button type="button" class="btn btn-outline-secondary" onclick="copyUPIId('{{ form.upi_id.value|default:'' }}')">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                            {% if form.upi_id.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.upi_id.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.upi_id.help_text }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                {{ form.phone_number }}
+                            </div>
+                            {% if form.phone_number.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.phone_number.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'core:dashboard' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Account Statistics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-graph-up"></i> Account Statistics
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3">
+                            <h4 class="text-primary mb-1">{{ user.created_pools.count }}</h4>
+                            <small class="text-muted">Pools Created</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3">
+                            <h4 class="text-success mb-1">{{ user.pools.count }}</h4>
+                            <small class="text-muted">Total Pools</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3">
+                            <h4 class="text-info mb-1">{{ user.paid_expenses.count }}</h4>
+                            <small class="text-muted">Expenses Paid</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3">
+                            <h4 class="text-warning mb-1">{{ user.date_joined|date:"M Y" }}</h4>
+                            <small class="text-muted">Member Since</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Recent Activity
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for expense in user.paid_expenses.all|slice:":5" %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ expense.title }}</h6>
+                            <small class="text-muted">Paid in {{ expense.pool.name }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-success">₹{{ expense.amount }}</span>
+                            <br>
+                            <small class="text-muted">{{ expense.expense_date|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-receipt text-muted"></i>
+                        <p class="text-muted mb-0">No recent activity</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border-left: none;
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+

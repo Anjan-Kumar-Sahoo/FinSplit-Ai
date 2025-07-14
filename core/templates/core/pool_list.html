@@ -1,0 +1,180 @@
+{% extends 'core/base.html' %}
+
+{% block title %}My Pools - FinSplit{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="h3 mb-0">My Pools</h1>
+        <p class="text-muted">Manage your expense pools and groups</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'core:pool_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create New Pool
+        </a>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="get" class="d-flex">
+            <input type="text" name="search" class="form-control" placeholder="Search pools..." 
+                   value="{{ search_query }}" id="poolSearch" onkeyup="searchPools()">
+            <button type="submit" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Pools Grid -->
+<div class="row">
+    {% for pool in page_obj %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card pool-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">
+                        <a href="{% url 'core:pool_detail' pool.id %}" class="text-decoration-none">
+                            {{ pool.name }}
+                        </a>
+                    </h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'core:pool_detail' pool.id %}">
+                                <i class="bi bi-eye"></i> View Details
+                            </a></li>
+                            {% if pool.created_by == user %}
+                            <li><a class="dropdown-item" href="{% url 'core:pool_edit' pool.id %}">
+                                <i class="bi bi-pencil"></i> Edit Pool
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'core:pool_delete' pool.id %}">
+                                <i class="bi bi-trash"></i> Delete Pool
+                            </a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <p class="card-text text-muted">{{ pool.description|truncatechars:80 }}</p>
+                
+                <div class="pool-stats mb-3">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="h5 mb-0">{{ pool.get_member_count }}</div>
+                            <small>Members</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h5 mb-0">{{ pool.expenses.count }}</div>
+                            <small>Expenses</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h5 mb-0">₹{{ pool.get_total_expenses }}</div>
+                            <small>Total</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="bi bi-person"></i> Created by 
+                        {% if pool.created_by == user %}
+                            You
+                        {% else %}
+                            {{ pool.created_by.username }}
+                        {% endif %}
+                    </small>
+                    <small class="text-muted">{{ pool.created_at|date:"M d, Y" }}</small>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'core:pool_detail' pool.id %}" class="btn btn-primary btn-sm flex-fill">
+                        <i class="bi bi-eye"></i> View
+                    </a>
+                    <a href="{% url 'core:expense_add' pool.id %}" class="btn btn-success btn-sm flex-fill">
+                        <i class="bi bi-plus"></i> Add Expense
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="bi bi-people display-1 text-muted mb-4"></i>
+            <h3 class="text-muted">No pools found</h3>
+            {% if search_query %}
+                <p class="text-muted">No pools match your search for "{{ search_query }}"</p>
+                <a href="{% url 'core:pool_list' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Show All Pools
+                </a>
+            {% else %}
+                <p class="text-muted">Create your first pool to start splitting expenses with friends and family</p>
+                <a href="{% url 'core:pool_create' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Create Your First Pool
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Pool pagination">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+<script>
+function searchPools() {
+    // This function is defined in main.js
+    // Real-time search functionality
+}
+</script>
+{% endblock %}
+

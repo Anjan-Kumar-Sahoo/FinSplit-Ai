@@ -1,0 +1,203 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - FinSplit{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h3 mb-0">Welcome back, {{ user.first_name|default:user.username }}!</h1>
+        <p class="text-muted">Here's your expense overview</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ pools.count }}</div>
+            <div class="stat-label">Active Pools</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ recent_expenses.count }}</div>
+            <div class="stat-label">Recent Expenses</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ pending_transactions.count }}</div>
+            <div class="stat-label">Pending Settlements</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="stat-number">₹0.00</div>
+            <div class="stat-label">Net Balance</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Pools Section -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-people"></i> Your Pools
+                </h5>
+                <a href="{% url 'core:pool_create' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus"></i> New Pool
+                </a>
+            </div>
+            <div class="card-body">
+                {% if pools %}
+                    <div class="row">
+                        {% for pool in pools %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card pool-card">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <a href="{% url 'core:pool_detail' pool.id %}" class="text-decoration-none">
+                                            {{ pool.name }}
+                                        </a>
+                                    </h6>
+                                    <p class="card-text text-muted small">{{ pool.description|truncatechars:50 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="bi bi-people"></i> {{ pool.get_member_count }} members
+                                        </small>
+                                        <small class="text-success fw-bold">
+                                            ₹{{ pool.get_total_expenses }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center">
+                        <a href="{% url 'core:pool_list' %}" class="btn btn-outline-primary">
+                            View All Pools
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-people display-4 text-muted mb-3"></i>
+                        <h5 class="text-muted">No pools yet</h5>
+                        <p class="text-muted">Create your first pool to start splitting expenses</p>
+                        <a href="{% url 'core:pool_create' %}" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Create Your First Pool
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-lg-4">
+        <!-- Recent Expenses -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Recent Expenses
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if recent_expenses %}
+                    {% for expense in recent_expenses %}
+                    <div class="expense-item mb-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ expense.title }}</h6>
+                                <small class="text-muted">{{ expense.pool.name }}</small>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-success">₹{{ expense.amount }}</div>
+                                <small class="text-muted">{{ expense.expense_date|date:"M d" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-receipt text-muted"></i>
+                        <p class="text-muted mb-0">No recent expenses</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pending Settlements -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Pending Settlements
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if pending_transactions %}
+                    {% for transaction in pending_transactions %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                        <div>
+                            <small class="text-muted">
+                                {% if transaction.from_user == user %}
+                                    You owe {{ transaction.to_user.username }}
+                                {% else %}
+                                    {{ transaction.from_user.username }} owes you
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="fw-bold">₹{{ transaction.amount }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <p class="text-muted mb-0">All settled up!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-lightning"></i> Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'core:pool_create' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-plus-circle"></i> Create Pool
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-success w-100" onclick="showAddExpenseModal()">
+                            <i class="bi bi-receipt"></i> Add Expense
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'core:profile' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-person"></i> Edit Profile
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'core:pool_list' %}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-list"></i> View All Pools
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
