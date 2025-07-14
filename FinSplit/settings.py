@@ -201,11 +201,17 @@ X_FRAME_OPTIONS = 'DENY'
 
 # CSRF settings for proxied domains
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.manus.computer',
+    'https://web-production-cc25.up.railway.app',
     'http://localhost:8000',
-    'http://127.0.0.1:8000',
+    'http://127.0.0.1:8000'
 ]
 
-ALLOWED_HOSTS = ['*']
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+ALLOWED_HOSTS = ['*']
+
+import os
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "unsafe-default-key")
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # for collectstatic
