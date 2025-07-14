@@ -1,1 +1,1 @@
-web: gunicorn FinSplitai.wsgi:application
+web: gunicorn FinSplit.wsgi:application
